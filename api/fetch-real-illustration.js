@@ -12,19 +12,21 @@ function tagsContainWord(tags, word) {
   return pattern.test(tags)
 }
 
-async function tryPixabay(subject) {
+async function searchPixabay(subject, limit) {
   const apiKey = process.env.PIXABAY_API_KEY
-  if (!apiKey) return null
+  if (!apiKey) return []
 
-  const url = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(subject)}&image_type=photo&safesearch=true&per_page=15`
+  const url = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(subject)}&image_type=photo&safesearch=true&per_page=30`
   try {
     const response = await fetch(url)
-    if (!response.ok) return null
+    if (!response.ok) return []
     const data = await response.json()
-    const hit = data.hits?.find((h) => tagsContainWord(h.tags, subject))
-    return hit ? hit.webformatURL : null
+    return (data.hits ?? [])
+      .filter((h) => tagsContainWord(h.tags, subject))
+      .slice(0, limit)
+      .map((h) => h.webformatURL)
   } catch {
-    return null
+    return []
   }
 }
 
@@ -42,9 +44,10 @@ async function tryIconify(subject) {
   }
 }
 
-function pollinationsFallback(subject) {
+function pollinationsFallback(subject, variant) {
   const prompt = `a single, clearly recognizable ${subject} with its distinct characteristic features, realistic photo style, for children`
-  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&nologo=true`
+  const seedParam = variant ? `&seed=${variant}` : ''
+  return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&nologo=true${seedParam}`
 }
 
 export default async function handler(req, res) {
@@ -55,7 +58,7 @@ export default async function handler(req, res) {
     return
   }
 
-  const { subject } = req.body || {}
+  const { subject, count } = req.body || {}
   if (!subject) {
     res.statusCode = 400
     res.setHeader('Content-Type', 'application/json')
@@ -63,7 +66,24 @@ export default async function handler(req, res) {
     return
   }
 
-  const pixabayUrl = await tryPixabay(subject)
+  // count指定時は「違う写真を選ぶ」用に複数候補をまとめて返す
+  if (count && count > 1) {
+    const images = await searchPixabay(subject, count)
+    if (images.length < count) {
+      const iconifyUrl = await tryIconify(subject)
+      if (iconifyUrl && !images.includes(iconifyUrl)) images.push(iconifyUrl)
+    }
+    let variant = 1
+    while (images.length < count) {
+      images.push(pollinationsFallback(subject, variant))
+      variant++
+    }
+    res.setHeader('Content-Type', 'application/json')
+    res.end(JSON.stringify({ images: images.slice(0, count) }))
+    return
+  }
+
+  const [pixabayUrl] = await searchPixabay(subject, 1)
   if (pixabayUrl) {
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify({ imageUrl: pixabayUrl, source: 'pixabay' }))

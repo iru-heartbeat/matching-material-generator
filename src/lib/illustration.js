@@ -55,3 +55,34 @@ export async function fetchIllustrationImage({ en, emoji } = {}, styleHint) {
   }
   throw new Error('イラストの取得に失敗しました（混み合っています。しばらくしてから再度お試しください）')
 }
+
+// 「違う写真を選ぶ」用に候補を複数取得する。Pollinations AIは同時リクエストに弱いため、
+// ここでも1枚ずつ順番に取得する（絵文字があれば1つ目の候補として含める）。
+export async function fetchIllustrationAlternatives({ en, emoji } = {}, count = 4) {
+  const results = []
+
+  if (emoji) {
+    const emojiUrl = getEmojiImageUrl(emoji)
+    try {
+      await preloadImage(emojiUrl)
+      results.push(emojiUrl)
+    } catch {
+      // 取得できなければ候補に含めない
+    }
+  }
+
+  const baseUrl = buildIllustrationUrl(en)
+  let variant = 1
+  while (results.length < count && variant <= count + 3) {
+    const url = `${baseUrl}&seed=${Date.now()}-${variant}`
+    try {
+      await preloadImage(url)
+      results.push(url)
+    } catch {
+      // 失敗した候補はスキップして次を試す
+    }
+    variant++
+  }
+
+  return results
+}

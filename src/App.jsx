@@ -27,6 +27,10 @@ function App() {
     setScreen('theme')
   }
 
+  function handleChangeImage(pairId, field, url) {
+    setPairs((prev) => prev.map((pair) => (pair.id === pairId ? { ...pair, [field]: url } : pair)))
+  }
+
   async function handleThemeSubmit(themeValue) {
     setScreen('loading')
     setError('')
@@ -47,7 +51,13 @@ function App() {
           const { reading, kanji, en, emoji } = kanjiPairs[i]
           setProgress({ current: i + 1, total: kanjiPairs.length })
           const imageUrl = await fetchIllustrationImage({ en, emoji })
-          nextPairs.push({ id: `${i}-${kanji}`, imageUrl, label: kanji, hint: reading })
+          nextPairs.push({
+            id: `${i}-${kanji}`,
+            imageUrl,
+            label: kanji,
+            hint: reading,
+            imageMeta: { source: 'pollinations', subject: en, emoji },
+          })
         }
       } else {
         const words = await generateWords({
@@ -70,10 +80,18 @@ function App() {
               imageUrl: realisticUrl,
               cardImageUrl: lineArtUrl,
               hint: word,
+              imageMeta: { source: 'pixabay-chain', subject: en },
+              cardImageMeta: { source: 'pollinations', subject: en, emoji },
             })
           } else {
             const imageUrl = await fetchIllustrationImage({ en, emoji })
-            nextPairs.push({ id: `${i}-${word}`, imageUrl, label: word, hint: word })
+            nextPairs.push({
+              id: `${i}-${word}`,
+              imageUrl,
+              label: word,
+              hint: word,
+              imageMeta: { source: 'pollinations', subject: en, emoji },
+            })
           }
         }
       }
@@ -106,6 +124,7 @@ function App() {
           theme={theme}
           pairs={pairs}
           onBack={() => setScreen('theme')}
+          onChangeImage={handleChangeImage}
           cardLabel="絵カード"
           hintEnabled={settings.hintEnabled}
         />
@@ -115,6 +134,7 @@ function App() {
           theme={theme}
           pairs={pairs}
           onBack={() => setScreen('theme')}
+          onChangeImage={handleChangeImage}
           cardLabel="漢字カード"
           hintEnabled={settings.hintEnabled}
         />
@@ -124,6 +144,7 @@ function App() {
           theme={theme}
           pairs={pairs}
           onBack={() => setScreen('theme')}
+          onChangeImage={handleChangeImage}
           hintEnabled={settings.hintEnabled}
         />
       )}

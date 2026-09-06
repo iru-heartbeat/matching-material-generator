@@ -1,4 +1,6 @@
-export default function MaterialPreview({ theme, pairs, onBack, cardLabel = '名前カード', hintEnabled = false }) {
+import IllustrationChooser from './IllustrationChooser'
+
+export default function MaterialPreview({ theme, pairs, onBack, onChangeImage, cardLabel = '名前カード', hintEnabled = false }) {
   const isImagePair = Boolean(pairs[0]?.cardImageUrl)
 
   return (
@@ -26,6 +28,11 @@ export default function MaterialPreview({ theme, pairs, onBack, cardLabel = '名
             <div key={pair.id} className="flex flex-col items-center gap-2 rounded-xl border-2 border-stone-800 p-3">
               <img src={pair.imageUrl} alt="" className="h-28 w-28 rounded-lg object-cover" />
               {hintEnabled && <span className="text-xs text-stone-400">{pair.hint}</span>}
+              <IllustrationChooser
+                meta={pair.imageMeta}
+                currentUrl={pair.imageUrl}
+                onSelect={(url) => onChangeImage(pair.id, 'imageUrl', url)}
+              />
               {!isImagePair && (
                 <div className="flex h-14 w-full items-center justify-center rounded-lg border-2 border-dashed border-green-200">
                   <span className="px-2 text-center text-xs text-stone-400">ここに{cardLabel}をおく</span>
@@ -46,6 +53,11 @@ export default function MaterialPreview({ theme, pairs, onBack, cardLabel = '名
             isImagePair ? (
               <div key={pair.id} className="flex flex-col items-center gap-2 rounded-xl border-2 border-stone-800 p-3">
                 <img src={pair.cardImageUrl} alt="" className="h-28 w-28 rounded-lg object-cover" />
+                <IllustrationChooser
+                  meta={pair.cardImageMeta}
+                  currentUrl={pair.cardImageUrl}
+                  onSelect={(url) => onChangeImage(pair.id, 'cardImageUrl', url)}
+                />
               </div>
             ) : (
               <div key={pair.id} className="p-3">

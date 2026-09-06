@@ -36,3 +36,16 @@ export async function fetchRealIllustration(subject) {
   }
   return data.imageUrl
 }
+
+export async function fetchRealIllustrationAlternatives(subject, count = 4) {
+  const res = await fetch('/api/fetch-real-illustration', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subject, count }),
+  })
+  const data = await res.json()
+  if (!res.ok) {
+    throw new Error(data.error || 'イラストの取得に失敗しました')
+  }
+  return data.images
+}
