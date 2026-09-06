@@ -44,6 +44,19 @@ export async function generateKanjiPairs({ theme, age, pairCount, wordLengthCond
   return data.pairs
 }
 
+export async function translateWord(word) {
+  const res = await fetch('/api/translate-word', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ word }),
+  })
+  const data = await res.json()
+  if (!res.ok) {
+    throw new Error(describeGeminiError(data))
+  }
+  return { en: data.en, emoji: data.emoji }
+}
+
 export async function fetchRealIllustration(subject) {
   const res = await fetch('/api/fetch-real-illustration', {
     method: 'POST',

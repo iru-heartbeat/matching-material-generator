@@ -1,6 +1,15 @@
 import IllustrationChooser from './IllustrationChooser'
+import EditableItem from './EditableItem'
 
-export default function MaterialPreview({ theme, pairs, onBack, onChangeImage, cardLabel = '名前カード', hintEnabled = false }) {
+export default function MaterialPreview({
+  theme,
+  pairs,
+  onBack,
+  onChangeImage,
+  onEditItem,
+  cardLabel = '名前カード',
+  hintEnabled = false,
+}) {
   const isImagePair = Boolean(pairs[0]?.cardImageUrl)
 
   return (
@@ -33,6 +42,15 @@ export default function MaterialPreview({ theme, pairs, onBack, onChangeImage, c
                 currentUrl={pair.imageUrl}
                 onSelect={(url) => onChangeImage(pair.id, 'imageUrl', url)}
               />
+              {isImagePair && (
+                <div className="print:hidden">
+                  <EditableItem
+                    value={pair.hint}
+                    onSave={(newValue) => onEditItem(pair.id, newValue)}
+                    className="text-xs font-medium text-stone-500"
+                  />
+                </div>
+              )}
               {!isImagePair && (
                 <div className="flex h-14 w-full items-center justify-center rounded-lg border-2 border-dashed border-green-200">
                   <span className="px-2 text-center text-xs text-stone-400">ここに{cardLabel}をおく</span>
@@ -62,7 +80,11 @@ export default function MaterialPreview({ theme, pairs, onBack, onChangeImage, c
             ) : (
               <div key={pair.id} className="p-3">
                 <div className="flex h-14 w-full items-center justify-center rounded-lg border-2 border-stone-800">
-                  <span className="text-xl font-bold text-stone-800">{pair.label}</span>
+                  <EditableItem
+                    value={pair.label}
+                    onSave={(newValue) => onEditItem(pair.id, newValue)}
+                    className="text-xl font-bold text-stone-800"
+                  />
                 </div>
               </div>
             ),

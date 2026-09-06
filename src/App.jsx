@@ -3,7 +3,7 @@ import ModeSetupScreen from './components/ModeSetupScreen'
 import ThemeForm from './components/ThemeForm'
 import MaterialPreview from './components/MaterialPreview'
 import LoadingScreen from './components/LoadingScreen'
-import { generateWords, generateKanjiPairs, fetchRealIllustration } from './lib/api'
+import { generateWords, generateKanjiPairs, fetchRealIllustration, translateWord } from './lib/api'
 import { fetchIllustrationImage } from './lib/illustration'
 
 const DEFAULT_SETTINGS = {
@@ -29,6 +29,42 @@ function App() {
 
   function handleChangeImage(pairId, field, url) {
     setPairs((prev) => prev.map((pair) => (pair.id === pairId ? { ...pair, [field]: url } : pair)))
+  }
+
+  async function handleEditItem(pairId, newWord) {
+    const pair = pairs.find((p) => p.id === pairId)
+    if (!pair) return
+
+    const { en, emoji } = await translateWord(newWord)
+
+    if (pair.cardImageUrl !== undefined) {
+      // イラスト×イラスト: 両側のイラストを新しい単語で作り直す
+      const realisticUrl = await fetchRealIllustration(en)
+      const lineArtUrl = await fetchIllustrationImage({ en, emoji })
+      setPairs((prev) =>
+        prev.map((p) =>
+          p.id === pairId
+            ? {
+                ...p,
+                hint: newWord,
+                imageUrl: realisticUrl,
+                cardImageUrl: lineArtUrl,
+                imageMeta: { source: 'pixabay-chain', subject: en },
+                cardImageMeta: { source: 'pollinations', subject: en, emoji },
+              }
+            : p,
+        ),
+      )
+    } else {
+      const imageUrl = await fetchIllustrationImage({ en, emoji })
+      setPairs((prev) =>
+        prev.map((p) =>
+          p.id === pairId
+            ? { ...p, label: newWord, hint: newWord, imageUrl, imageMeta: { source: 'pollinations', subject: en, emoji } }
+            : p,
+        ),
+      )
+    }
   }
 
   async function handleThemeSubmit(themeValue) {
@@ -125,6 +161,7 @@ function App() {
           pairs={pairs}
           onBack={() => setScreen('theme')}
           onChangeImage={handleChangeImage}
+          onEditItem={handleEditItem}
           cardLabel="絵カード"
           hintEnabled={settings.hintEnabled}
         />
@@ -135,6 +172,7 @@ function App() {
           pairs={pairs}
           onBack={() => setScreen('theme')}
           onChangeImage={handleChangeImage}
+          onEditItem={handleEditItem}
           cardLabel="漢字カード"
           hintEnabled={settings.hintEnabled}
         />
@@ -145,6 +183,7 @@ function App() {
           pairs={pairs}
           onBack={() => setScreen('theme')}
           onChangeImage={handleChangeImage}
+          onEditItem={handleEditItem}
           hintEnabled={settings.hintEnabled}
         />
       )}
