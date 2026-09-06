@@ -4,16 +4,24 @@
 // 検索・生成はいずれも英単語（en）で行う。日本語のままだとヒット率・精度が下がるため。
 const ICONIFY_PREFIXES = 'twemoji,noto'
 
+// Pixabayはタグの緩いマッチで検索するため、hits[0]をそのまま採用すると
+// 「socks」で「sock flower（花の俗称）」がヒットするような無関係な結果を返すことがある。
+// タグに検索語が単語として正確に含まれるものだけを採用し、なければ不採用とする。
+function tagsContainWord(tags, word) {
+  const pattern = new RegExp(`(^|[,\\s])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}($|[,\\s])`, 'i')
+  return pattern.test(tags)
+}
+
 async function tryPixabay(subject) {
   const apiKey = process.env.PIXABAY_API_KEY
   if (!apiKey) return null
 
-  const url = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(subject)}&image_type=photo&safesearch=true&per_page=3`
+  const url = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(subject)}&image_type=photo&safesearch=true&per_page=15`
   try {
     const response = await fetch(url)
     if (!response.ok) return null
     const data = await response.json()
-    const hit = data.hits?.[0]
+    const hit = data.hits?.find((h) => tagsContainWord(h.tags, subject))
     return hit ? hit.webformatURL : null
   } catch {
     return null
