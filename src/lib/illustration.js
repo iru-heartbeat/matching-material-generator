@@ -1,10 +1,15 @@
 const STYLE_HINT = 'シンプルな線画, flat illustration, simple line art, for children'
 
+// 「違う写真を選ぶ」の候補が見た目でほぼ区別できない（単色の線画のため）という声を受けて、
+// 候補ごとに色を変えて生成する。
+const ALT_COLORS = ['blue', 'green', 'red', 'orange', 'purple', 'yellow', 'pink', 'teal']
+
 // ことば×イラストモードは常にPollinations AIを最優先で使う（要件書 §4.1）。
 // 日本語の単語だけだと画像生成モデルが対象を正しく認識できず、絵柄が崩れやすいため、
 // Geminiが付けた英単語（en）を主語にしてプロンプトを組み立てる。
-export function buildIllustrationUrl(subjectEn, styleHint = STYLE_HINT) {
-  const prompt = `a single, clearly recognizable ${subjectEn} with its distinct characteristic features, ${styleHint}`
+export function buildIllustrationUrl(subjectEn, styleHint = STYLE_HINT, color) {
+  const colorPart = color ? `${color} colored, ` : ''
+  const prompt = `a single, clearly recognizable ${colorPart}${subjectEn} with its distinct characteristic features, ${styleHint}`
   return `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?model=flux&nologo=true`
 }
 
@@ -58,7 +63,8 @@ export async function fetchIllustrationImage({ en, emoji } = {}, styleHint) {
 
 // 「違う写真を選ぶ」用に候補を複数取得する。Pollinations AIは同時リクエストに弱いため、
 // ここでも1枚ずつ順番に取得する（絵文字があれば1つ目の候補として含める）。
-export async function fetchIllustrationAlternatives({ en, emoji } = {}, count = 4) {
+// 全件そろうまで待つと体感が遅いため、1件取得できるごとにonEachで呼び出し元に通知する。
+export async function fetchIllustrationAlternatives({ en, emoji } = {}, count = 4, onEach) {
   const results = []
 
   if (emoji) {
@@ -66,18 +72,20 @@ export async function fetchIllustrationAlternatives({ en, emoji } = {}, count = 
     try {
       await preloadImage(emojiUrl)
       results.push(emojiUrl)
+      onEach?.(emojiUrl)
     } catch {
       // 取得できなければ候補に含めない
     }
   }
 
-  const baseUrl = buildIllustrationUrl(en)
-  let variant = 1
-  while (results.length < count && variant <= count + 3) {
-    const url = `${baseUrl}&seed=${Date.now()}-${variant}`
+  let variant = 0
+  while (results.length < count && variant < count + ALT_COLORS.length) {
+    const color = ALT_COLORS[variant % ALT_COLORS.length]
+    const url = `${buildIllustrationUrl(en, STYLE_HINT, color)}&seed=${Date.now()}-${variant}`
     try {
       await preloadImage(url)
       results.push(url)
+      onEach?.(url)
     } catch {
       // 失敗した候補はスキップして次を試す
     }

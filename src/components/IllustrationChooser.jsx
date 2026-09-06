@@ -5,23 +5,35 @@ import { fetchRealIllustrationAlternatives } from '../lib/api'
 export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
   const [status, setStatus] = useState('idle') // 'idle' | 'loading' | 'open'
   const [options, setOptions] = useState([])
+  const [stillLoading, setStillLoading] = useState(false)
   const [error, setError] = useState('')
 
   if (!meta) return null
 
   async function handleOpen() {
-    setStatus('loading')
+    setOptions([])
     setError('')
+    setStatus('loading')
+    setStillLoading(true)
     try {
-      const alternatives =
-        meta.source === 'pixabay-chain'
-          ? await fetchRealIllustrationAlternatives(meta.subject, 8)
-          : await fetchIllustrationAlternatives({ en: meta.subject, emoji: meta.emoji }, 8)
-      setOptions(alternatives.filter((url) => url !== currentUrl))
+      if (meta.source === 'pixabay-chain') {
+        // Pixabay検索は1回のリクエストで完結するため、まとめて返ってきてから表示する
+        const alternatives = await fetchRealIllustrationAlternatives(meta.subject, 8)
+        setOptions(alternatives.filter((url) => url !== currentUrl))
+      } else {
+        // Pollinations生成は1枚ずつ時間がかかるため、届いた分から順に表示する
+        setStatus('open')
+        await fetchIllustrationAlternatives({ en: meta.subject, emoji: meta.emoji }, 8, (url) => {
+          if (url === currentUrl) return
+          setOptions((prev) => [...prev, url])
+        })
+      }
       setStatus('open')
     } catch (err) {
       setError(err.message)
       setStatus('idle')
+    } finally {
+      setStillLoading(false)
     }
   }
 
@@ -47,9 +59,6 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
 
       {status === 'open' && (
         <div className="mt-2 flex w-56 flex-wrap items-center justify-center gap-1.5">
-          {options.length === 0 && (
-            <p className="text-[11px] text-stone-400">他の候補が見つかりませんでした</p>
-          )}
           {options.map((url) => (
             <button
               key={url}
@@ -60,6 +69,10 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
               <img src={url} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
+          {stillLoading && <p className="w-full text-[11px] text-stone-400">読み込み中…</p>}
+          {!stillLoading && options.length === 0 && (
+            <p className="text-[11px] text-stone-400">他の候補が見つかりませんでした</p>
+          )}
           <button
             type="button"
             onClick={() => setStatus('idle')}
