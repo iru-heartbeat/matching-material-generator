@@ -1,4 +1,4 @@
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash'
+const MODEL = process.env.GEMINI_MODEL || 'gemini-flash-lite-latest'
 
 // 先生が項目（ことば/漢字カードの表示）を編集したときに、イラスト再生成用の
 // 英単語（en）と絵文字候補（emoji）だけを取得する軽量エンドポイント。

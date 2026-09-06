@@ -1,4 +1,4 @@
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.6-flash'
+const MODEL = process.env.GEMINI_MODEL || 'gemini-flash-lite-latest'
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
