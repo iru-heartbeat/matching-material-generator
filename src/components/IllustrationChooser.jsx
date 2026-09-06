@@ -15,8 +15,8 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
     try {
       const alternatives =
         meta.source === 'pixabay-chain'
-          ? await fetchRealIllustrationAlternatives(meta.subject, 4)
-          : await fetchIllustrationAlternatives({ en: meta.subject, emoji: meta.emoji }, 4)
+          ? await fetchRealIllustrationAlternatives(meta.subject, 8)
+          : await fetchIllustrationAlternatives({ en: meta.subject, emoji: meta.emoji }, 8)
       setOptions(alternatives.filter((url) => url !== currentUrl))
       setStatus('open')
     } catch (err) {
@@ -46,7 +46,7 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
       {error && <p className="mt-1 text-[11px] text-red-600">{error}</p>}
 
       {status === 'open' && (
-        <div className="mt-2 flex w-32 flex-wrap items-center justify-center gap-1.5">
+        <div className="mt-2 flex w-56 flex-wrap items-center justify-center gap-1.5">
           {options.length === 0 && (
             <p className="text-[11px] text-stone-400">他の候補が見つかりませんでした</p>
           )}

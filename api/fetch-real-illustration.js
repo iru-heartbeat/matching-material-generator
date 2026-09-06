@@ -16,7 +16,7 @@ async function searchPixabay(subject, limit) {
   const apiKey = process.env.PIXABAY_API_KEY
   if (!apiKey) return []
 
-  const url = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(subject)}&image_type=photo&safesearch=true&per_page=30`
+  const url = `https://pixabay.com/api/?key=${apiKey}&q=${encodeURIComponent(subject)}&image_type=photo&safesearch=true&per_page=50`
   try {
     const response = await fetch(url)
     if (!response.ok) return []
