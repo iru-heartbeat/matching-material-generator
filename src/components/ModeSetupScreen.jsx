@@ -23,15 +23,21 @@ export const MODES = [
 
 const AGE_OPTIONS = ['未就学', '小学校低学年', '小学校中学年', '小学校高学年', '中学生']
 
+export const WORD_LENGTH_CONDITIONS = [
+  { id: 'none', label: '指定なし' },
+  { id: 'single-character', label: '1文字のことばのみ（は・ひ・め など）' },
+]
+
 export default function ModeSetupScreen({ initialSettings, onNext }) {
   const [mode, setMode] = useState(initialSettings.mode)
   const [hintEnabled, setHintEnabled] = useState(initialSettings.hintEnabled)
   const [age, setAge] = useState(initialSettings.age)
   const [pairCount, setPairCount] = useState(initialSettings.pairCount)
+  const [wordLengthCondition, setWordLengthCondition] = useState(initialSettings.wordLengthCondition)
 
   function handleSubmit(e) {
     e.preventDefault()
-    onNext({ mode, hintEnabled, age, pairCount: Number(pairCount) })
+    onNext({ mode, hintEnabled, age, pairCount: Number(pairCount), wordLengthCondition })
   }
 
   return (
@@ -83,6 +89,21 @@ export default function ModeSetupScreen({ initialSettings, onNext }) {
           onChange={(e) => setHintEnabled(e.target.checked)}
           className="h-5 w-5 accent-green-700"
         />
+      </label>
+
+      <label className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium text-stone-700">ことばの条件</span>
+        <select
+          value={wordLengthCondition}
+          onChange={(e) => setWordLengthCondition(e.target.value)}
+          className="rounded-lg border border-stone-300 px-3 py-2 text-stone-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+        >
+          {WORD_LENGTH_CONDITIONS.map((opt) => (
+            <option key={opt.id} value={opt.id}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </label>
 
       <div className="grid grid-cols-2 gap-4">

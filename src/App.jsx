@@ -12,6 +12,7 @@ const DEFAULT_SETTINGS = {
   hintEnabled: false,
   age: '小学校低学年',
   pairCount: 6,
+  wordLengthCondition: 'none',
 }
 
 function App() {
@@ -40,6 +41,7 @@ function App() {
           theme: themeValue,
           age: settings.age,
           pairCount: settings.pairCount,
+          wordLengthCondition: settings.wordLengthCondition,
         })
         // Pollinations AIは同時リクエストに弱いため、1枚ずつ順番に取得する
         for (let i = 0; i < kanjiPairs.length; i++) {
@@ -49,7 +51,12 @@ function App() {
           nextPairs.push({ id: `${i}-${kanji}`, imageUrl, label: kanji, hint: reading })
         }
       } else {
-        const words = await generateWords({ theme: themeValue, age: settings.age, pairCount: settings.pairCount })
+        const words = await generateWords({
+          theme: themeValue,
+          age: settings.age,
+          pairCount: settings.pairCount,
+          wordLengthCondition: settings.wordLengthCondition,
+        })
         // Pollinations AIは同時リクエストに弱いため、1枚ずつ順番に取得する
         for (let i = 0; i < words.length; i++) {
           const { word, en, emoji } = words[i]

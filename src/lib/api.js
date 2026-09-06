@@ -1,8 +1,8 @@
-export async function generateWords({ theme, age, pairCount }) {
+export async function generateWords({ theme, age, pairCount, wordLengthCondition }) {
   const res = await fetch('/api/generate-words', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ theme, age, pairCount }),
+    body: JSON.stringify({ theme, age, pairCount, wordLengthCondition }),
   })
   const data = await res.json()
   if (!res.ok) {
@@ -11,11 +11,11 @@ export async function generateWords({ theme, age, pairCount }) {
   return data.words
 }
 
-export async function generateKanjiPairs({ theme, age, pairCount }) {
+export async function generateKanjiPairs({ theme, age, pairCount, wordLengthCondition }) {
   const res = await fetch('/api/generate-kanji-pairs', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ theme, age, pairCount }),
+    body: JSON.stringify({ theme, age, pairCount, wordLengthCondition }),
   })
   const data = await res.json()
   if (!res.ok) {

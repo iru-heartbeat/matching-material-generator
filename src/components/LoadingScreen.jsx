@@ -1,6 +1,7 @@
-import { MODES } from './ModeSetupScreen'
+import { MODES, WORD_LENGTH_CONDITIONS } from './ModeSetupScreen'
 
 const MODE_TITLES = Object.fromEntries(MODES.map((m) => [m.id, m.title]))
+const CONDITION_LABELS = Object.fromEntries(WORD_LENGTH_CONDITIONS.map((c) => [c.id, c.label]))
 
 export default function LoadingScreen({ theme, settings, progress }) {
   const percent = progress ? Math.round((progress.current / progress.total) * 100) : 0
@@ -74,6 +75,12 @@ export default function LoadingScreen({ theme, settings, progress }) {
           <dt className="text-stone-500">ペア数</dt>
           <dd className="font-medium text-stone-800">{settings.pairCount}</dd>
         </div>
+        {settings.wordLengthCondition && settings.wordLengthCondition !== 'none' && (
+          <div className="flex justify-between gap-3">
+            <dt className="text-stone-500">ことばの条件</dt>
+            <dd className="font-medium text-stone-800">{CONDITION_LABELS[settings.wordLengthCondition]}</dd>
+          </div>
+        )}
         <div className="flex justify-between gap-3">
           <dt className="text-stone-500">ヒント表示</dt>
           <dd className="font-medium text-stone-800">{settings.hintEnabled ? 'オン' : 'オフ'}</dd>

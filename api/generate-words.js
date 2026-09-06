@@ -8,13 +8,18 @@ export default async function handler(req, res) {
     return
   }
 
-  const { theme, age, pairCount } = req.body || {}
+  const { theme, age, pairCount, wordLengthCondition } = req.body || {}
   if (!theme || !pairCount) {
     res.statusCode = 400
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify({ error: 'theme と pairCount は必須です' }))
     return
   }
+
+  const conditionText =
+    wordLengthCondition === 'single-character'
+      ? '\n条件: ことばはすべて、ひらがな1文字で表される単語にしてください。例：は（歯）、ひ（火）、め（目）、て（手）など。1文字だけで意味が通る具体的な名詞のみを選んでください。'
+      : ''
 
   const apiKey = process.env.GEMINI_API_KEY
   if (!apiKey) {
@@ -26,7 +31,7 @@ export default async function handler(req, res) {
 
   const prompt = `あなたは日本の特別支援学級向け教材を作る先生の補助AIです。
 テーマ「${theme}」に関連する、${age ? `${age}の児童にとってやさしい` : 'やさしい'}「ことば」を${pairCount}個、
-具体的なものの名前（名詞）で挙げてください。表記はひらがな、またはひらがな＋やさしい漢字にしてください。
+具体的なものの名前（名詞）で挙げてください。表記はひらがな、またはひらがな＋やさしい漢字にしてください。${conditionText}
 あわせて、各ことばが指すものを画像生成AIで正確に描かせるための、シンプルで具体的な英単語（en）も付けてください。
 さらに、🍎や🐶のように、その単語をそのまま表す絵文字が標準で存在する場合はemojiフィールドに1文字だけ入れてください。
 なければ空文字（""）にしてください。無理にこじつけないでください。
