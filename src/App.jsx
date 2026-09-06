@@ -76,7 +76,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-svh bg-stone-100 px-4 py-10">
+    <div className="min-h-svh bg-amber-50 px-4 py-10">
       {screen === 'setup' && <ModeSetupScreen initialSettings={settings} onNext={handleSetupNext} />}
 
       {(screen === 'theme' || screen === 'error') && (
