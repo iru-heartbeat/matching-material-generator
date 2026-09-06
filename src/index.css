@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@media print {
+  body {
+    background: white;
+  }
+}
+
+@keyframes steam-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.9);
+  }
+  30% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-22px) scale(1.15);
+  }
+}
+
+.animate-steam-1 {
+  animation: steam-rise 2.4s ease-in infinite;
+}
+
+.animate-steam-2 {
+  animation: steam-rise 2.4s ease-in infinite;
+  animation-delay: 1.2s;
+}
+
