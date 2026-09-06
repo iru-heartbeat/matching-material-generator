@@ -66,18 +66,26 @@ export default async function handler(req, res) {
     return
   }
 
-  // count指定時は「違う写真を選ぶ」用に複数候補をまとめて返す
+  // count指定時は「違う写真を選ぶ」用に複数候補をまとめて返す。
+  // Pixabayはタグが一致していても写真として不適切なことがある（例:「ズボン」でジーンズの
+  // ポケット接写、「てぶくろ」でピエロの写真）ため、実写真だけに頼らず、Pollinations AIの
+  // 「写真風」生成画像も交互に混ぜて候補の幅を持たせる。
   if (count && count > 1) {
-    const images = await searchPixabay(subject, count)
-    if (images.length < count) {
-      const iconifyUrl = await tryIconify(subject)
-      if (iconifyUrl && !images.includes(iconifyUrl)) images.push(iconifyUrl)
+    const pixabayCount = Math.ceil(count / 2)
+    const pixabayImages = await searchPixabay(subject, pixabayCount)
+
+    const pollinationsCount = count - pixabayImages.length
+    const pollinationsImages = Array.from({ length: pollinationsCount }, (_, i) =>
+      pollinationsFallback(subject, i + 1),
+    )
+
+    const images = []
+    const maxLen = Math.max(pixabayImages.length, pollinationsImages.length)
+    for (let i = 0; i < maxLen; i++) {
+      if (pixabayImages[i]) images.push(pixabayImages[i])
+      if (pollinationsImages[i]) images.push(pollinationsImages[i])
     }
-    let variant = 1
-    while (images.length < count) {
-      images.push(pollinationsFallback(subject, variant))
-      variant++
-    }
+
     res.setHeader('Content-Type', 'application/json')
     res.end(JSON.stringify({ images: images.slice(0, count) }))
     return
