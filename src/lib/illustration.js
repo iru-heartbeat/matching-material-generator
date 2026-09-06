@@ -79,15 +79,21 @@ export async function fetchIllustrationAlternatives({ en, emoji } = {}, count = 
   }
 
   let variant = 0
-  while (results.length < count && variant < count + ALT_COLORS.length) {
+  let consecutiveFailures = 0
+  while (results.length < count && variant < (count + ALT_COLORS.length) * 2) {
     const color = ALT_COLORS[variant % ALT_COLORS.length]
     const url = `${buildIllustrationUrl(en, STYLE_HINT, color)}&seed=${Date.now()}-${variant}`
     try {
       await preloadImage(url)
       results.push(url)
       onEach?.(url)
+      consecutiveFailures = 0
     } catch {
-      // 失敗した候補はスキップして次を試す
+      // 混雑（レート制限）で失敗している可能性があるため、間隔を空けてから次を試す。
+      // 待たずに次々試すと、混雑時に全滅して候補が0件になってしまう。
+      consecutiveFailures++
+      await new Promise((resolve) => setTimeout(resolve, 5000))
+      if (consecutiveFailures >= 8) break
     }
     variant++
   }
