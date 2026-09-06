@@ -2,7 +2,6 @@ import { useState } from 'react'
 import ModeSetupScreen from './components/ModeSetupScreen'
 import ThemeForm from './components/ThemeForm'
 import MaterialPreview from './components/MaterialPreview'
-import IllustrationMatchPreview from './components/IllustrationMatchPreview'
 import LoadingScreen from './components/LoadingScreen'
 import { generateWords, generateKanjiPairs, fetchRealIllustration } from './lib/api'
 import { fetchIllustrationImage } from './lib/illustration'
@@ -66,7 +65,12 @@ function App() {
             // リアル画像側は写真であるべきなので絵文字は使わない
             const realisticUrl = await fetchRealIllustration(en)
             const lineArtUrl = await fetchIllustrationImage({ en, emoji })
-            nextPairs.push({ id: `${i}-${word}`, word, realisticUrl, lineArtUrl })
+            nextPairs.push({
+              id: `${i}-${word}`,
+              imageUrl: realisticUrl,
+              cardImageUrl: lineArtUrl,
+              hint: word,
+            })
           } else {
             const imageUrl = await fetchIllustrationImage({ en, emoji })
             nextPairs.push({ id: `${i}-${word}`, imageUrl, label: word, hint: word })
@@ -98,10 +102,11 @@ function App() {
       {screen === 'loading' && <LoadingScreen theme={theme} settings={settings} progress={progress} />}
 
       {screen === 'preview' && settings.mode === 'illustration-illustration' && (
-        <IllustrationMatchPreview
+        <MaterialPreview
           theme={theme}
           pairs={pairs}
           onBack={() => setScreen('theme')}
+          cardLabel="絵カード"
           hintEnabled={settings.hintEnabled}
         />
       )}

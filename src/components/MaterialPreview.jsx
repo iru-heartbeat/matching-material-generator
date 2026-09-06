@@ -40,8 +40,12 @@ export default function MaterialPreview({ theme, pairs, onBack, cardLabel = '名
         <div className="grid grid-cols-3 gap-4">
           {pairs.map((pair) => (
             <div key={pair.id} className="p-3">
-              <div className="flex h-14 w-full items-center justify-center rounded-lg border-2 border-stone-800">
-                <span className="text-xl font-bold text-stone-800">{pair.label}</span>
+              <div className="flex h-14 w-full items-center justify-center overflow-hidden rounded-lg border-2 border-stone-800">
+                {pair.cardImageUrl ? (
+                  <img src={pair.cardImageUrl} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <span className="text-xl font-bold text-stone-800">{pair.label}</span>
+                )}
               </div>
             </div>
           ))}
