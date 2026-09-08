@@ -50,9 +50,11 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
           }
         }
       } else {
-        // Pollinations生成は1枚ずつ時間がかかるため、届いた分から順に表示する
+        // Pollinationsは無料枠だと同一IPから同時1リクエストしか受け付けず、
+        // 1枚あたり10〜30秒以上かかることもあるため、候補数を絞って待ち時間を短くする。
+        // 届いた分から順に表示する。
         setStatus('open')
-        await fetchIllustrationAlternatives({ en: meta.subject, emoji: meta.emoji }, 8, (url) => {
+        await fetchIllustrationAlternatives({ en: meta.subject, emoji: meta.emoji }, 4, (url) => {
           if (url === currentUrl) return
           setOptions((prev) => [...prev, url])
         })
@@ -116,7 +118,11 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
               <img src={url} alt="" className="h-full w-full object-cover" />
             </button>
           ))}
-          {stillLoading && <p className="w-full text-[11px] text-stone-400">読み込み中…</p>}
+          {stillLoading && (
+            <p className="w-full text-[11px] text-stone-400">
+              読み込み中…（混み合っていると時間がかかることがあります）
+            </p>
+          )}
           {!stillLoading && options.length === 0 && (
             <p className="text-[11px] text-stone-400">他の候補が見つかりませんでした</p>
           )}
