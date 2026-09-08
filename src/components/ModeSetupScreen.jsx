@@ -1,22 +1,30 @@
 import { useState } from 'react'
 
+// グリッドは3列で、配列の並び順がそのまま表示位置になる
+// （ひらがな→カタカナ→漢字が1行目、ひらがなの下にイラスト×イラストが来るよう並べている）。
 export const MODES = [
   {
     id: 'word-illustration',
-    title: 'ことば×イラスト',
-    description: 'ことばとイラストをマッチさせる、基本のモード。',
+    title: 'ことば（ひらがな）×イラスト',
+    description: 'ひらがなのことばとイラストをマッチさせる、基本のモード。',
     available: true,
   },
   {
-    id: 'illustration-illustration',
-    title: 'イラスト×イラスト',
-    description: '作風の異なる2種類のイラストをマッチさせる。',
+    id: 'katakana-illustration',
+    title: 'ことば（カタカナ）×イラスト',
+    description: '外来語などカタカナのことばとイラストをマッチさせる。',
     available: true,
   },
   {
     id: 'illustration-kanji',
     title: 'イラスト×漢字',
     description: 'イラストの意味に合う漢字をマッチさせる。',
+    available: true,
+  },
+  {
+    id: 'illustration-illustration',
+    title: 'イラスト×イラスト',
+    description: '作風の異なる2種類のイラストをマッチさせる。',
     available: true,
   },
 ]
@@ -91,20 +99,22 @@ export default function ModeSetupScreen({ initialSettings, onNext }) {
         />
       </label>
 
-      <label className="flex flex-col gap-1.5">
-        <span className="text-sm font-medium text-stone-700">ことばの条件</span>
-        <select
-          value={wordLengthCondition}
-          onChange={(e) => setWordLengthCondition(e.target.value)}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-stone-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
-        >
-          {WORD_LENGTH_CONDITIONS.map((opt) => (
-            <option key={opt.id} value={opt.id}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      {mode !== 'katakana-illustration' && (
+        <label className="flex flex-col gap-1.5">
+          <span className="text-sm font-medium text-stone-700">ことばの条件</span>
+          <select
+            value={wordLengthCondition}
+            onChange={(e) => setWordLengthCondition(e.target.value)}
+            className="rounded-lg border border-stone-300 px-3 py-2 text-stone-900 outline-none focus:border-green-600 focus:ring-2 focus:ring-green-100"
+          >
+            {WORD_LENGTH_CONDITIONS.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <label className="flex flex-col gap-1.5">

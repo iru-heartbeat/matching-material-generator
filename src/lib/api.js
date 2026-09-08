@@ -18,11 +18,11 @@ function describeGeminiError(data) {
   }
 }
 
-export async function generateWords({ theme, age, pairCount, wordLengthCondition }) {
+export async function generateWords({ theme, age, pairCount, wordLengthCondition, script }) {
   const res = await fetch('/api/generate-words', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ theme, age, pairCount, wordLengthCondition }),
+    body: JSON.stringify({ theme, age, pairCount, wordLengthCondition, script }),
   })
   const data = await res.json()
   if (!res.ok) {

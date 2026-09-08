@@ -111,6 +111,7 @@ function App() {
           age: settings.age,
           pairCount: settings.pairCount,
           wordLengthCondition: settings.wordLengthCondition,
+          script: settings.mode === 'katakana-illustration' ? 'katakana' : 'hiragana',
         })
         // Pollinations AIは同時リクエストに弱いため、1枚ずつ順番に取得する
         for (let i = 0; i < words.length; i++) {
@@ -187,16 +188,17 @@ function App() {
           hintEnabled={settings.hintEnabled}
         />
       )}
-      {screen === 'preview' && settings.mode === 'word-illustration' && (
-        <MaterialPreview
-          theme={theme}
-          pairs={pairs}
-          onBack={() => setScreen('theme')}
-          onChangeImage={handleChangeImage}
-          onEditItem={handleEditItem}
-          hintEnabled={settings.hintEnabled}
-        />
-      )}
+      {screen === 'preview' &&
+        (settings.mode === 'word-illustration' || settings.mode === 'katakana-illustration') && (
+          <MaterialPreview
+            theme={theme}
+            pairs={pairs}
+            onBack={() => setScreen('theme')}
+            onChangeImage={handleChangeImage}
+            onEditItem={handleEditItem}
+            hintEnabled={settings.hintEnabled}
+          />
+        )}
     </div>
   )
 }

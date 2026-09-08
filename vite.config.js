@@ -5,13 +5,16 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { defineConfig, loadEnv } from 'vite'
 
+// チャンクをそのまま文字列に連結すると、マルチバイト文字（日本語のテーマ名など）が
+// チャンクの境界で分断された際に文字化けする。Bufferとして集めてから最後にまとめて
+// utf8デコードすることで、境界がどこにあっても正しく復元できるようにする。
 function readBody(req) {
   return new Promise((resolve, reject) => {
-    let data = ''
+    const chunks = []
     req.on('data', (chunk) => {
-      data += chunk
+      chunks.push(chunk)
     })
-    req.on('end', () => resolve(data))
+    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
     req.on('error', reject)
   })
 }
