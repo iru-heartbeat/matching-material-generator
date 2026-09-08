@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { fetchIllustrationAlternatives } from '../lib/illustration'
+import { fetchIllustrationAlternatives, preloadImage } from '../lib/illustration'
 import { fetchRealIllustrationAlternatives } from '../lib/api'
 
 export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
@@ -17,9 +17,20 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
     setStillLoading(true)
     try {
       if (meta.source === 'pixabay-chain') {
-        // Pixabay検索は1回のリクエストで完結するため、まとめて返ってきてから表示する
+        // Pixabay/Pollinationsフォールバックの候補URLは、サーバー側では読み込み確認をしていない。
+        // 確認なしでそのまま表示すると、リンク切れや混雑時のPollinations画像が
+        // 破損アイコン（空欄）として表示されてしまうため、1件ずつプリロードできたものだけ表示する。
+        setStatus('open')
         const alternatives = await fetchRealIllustrationAlternatives(meta.subject, 8)
-        setOptions(alternatives.filter((url) => url !== currentUrl))
+        for (const url of alternatives) {
+          if (url === currentUrl) continue
+          try {
+            await preloadImage(url)
+            setOptions((prev) => [...prev, url])
+          } catch {
+            // 読み込めない候補は表示しない
+          }
+        }
       } else {
         // Pollinations生成は1枚ずつ時間がかかるため、届いた分から順に表示する
         setStatus('open')

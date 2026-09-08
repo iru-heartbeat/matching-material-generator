@@ -25,11 +25,27 @@ export function getEmojiImageUrl(emoji) {
   return `https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/${emojiToCodepoints(emoji)}.png`
 }
 
-function preloadImage(url) {
+// Pollinationsが混雑すると、onload/onerrorのどちらも発火しないまま応答が返ってこないことがある。
+// タイムアウトを設けないと「違う写真を選ぶ」の1件がハングしたまま次の候補に進めず、
+// 永遠に読み込み中のまま止まってしまうため、一定時間で失敗扱いにして次へ進める。
+// flux モデルは正常時でも1枚あたり10〜20秒程度かかることがあるため、
+// 短すぎるタイムアウトは正常な生成まで失敗扱いにしてしまう（実測で15秒は短すぎた）。
+export function preloadImage(url, timeoutMs = 45000) {
   return new Promise((resolve, reject) => {
     const img = new window.Image()
-    img.onload = () => resolve()
-    img.onerror = () => reject(new Error('load failed'))
+    const timer = setTimeout(() => {
+      img.onload = null
+      img.onerror = null
+      reject(new Error('load timeout'))
+    }, timeoutMs)
+    img.onload = () => {
+      clearTimeout(timer)
+      resolve()
+    }
+    img.onerror = () => {
+      clearTimeout(timer)
+      reject(new Error('load failed'))
+    }
     img.src = url
   })
 }
@@ -89,11 +105,13 @@ export async function fetchIllustrationAlternatives({ en, emoji } = {}, count = 
       onEach?.(url)
       consecutiveFailures = 0
     } catch {
-      // 混雑（レート制限）で失敗している可能性があるため、間隔を空けてから次を試す。
-      // 待たずに次々試すと、混雑時に全滅して候補が0件になってしまう。
+      // Pollinationsの無料枠は同一IPからの同時リクエストを1件しか受け付けず、
+      // 埋まっていると即座に429（Queue full）を返す。実測では1枚の生成に
+      // 10〜30秒以上かかることもあり、5秒待つ程度では埋まったままのことが多いため、
+      // 前の生成が終わるのを待てるだけの間隔を空けてから次を試す。
       consecutiveFailures++
-      await new Promise((resolve) => setTimeout(resolve, 5000))
-      if (consecutiveFailures >= 8) break
+      await new Promise((resolve) => setTimeout(resolve, 10000))
+      if (consecutiveFailures >= 12) break
     }
     variant++
   }
