@@ -32,6 +32,9 @@ export default async function handler(req, res) {
   const prompt = `あなたは日本の特別支援学級向け教材を作る先生の補助AIです。
 テーマ「${theme}」に関連する、${age ? `${age}の児童にとってやさしい` : 'やさしい'}「ことば」を${pairCount}個、
 具体的なものの名前（名詞）で挙げてください。表記はひらがな、またはひらがな＋やさしい漢字にしてください。${conditionText}
+テーマに対してまず思い浮かぶ定番の代表例（例:「動物」なら いぬ・ねこ・うさぎ、「果物」なら りんご・ばなな・みかん など）ばかりに偏らないでください。
+同じテーマでも実行のたびに毎回違う顔ぶれになるように、定番も少し混ぜつつ、それ以外の候補も積極的に含めてください。
+（今回の生成ID: ${crypto.randomUUID()}）
 あわせて、各ことばが指すものを画像生成AIで正確に描かせるための、シンプルで具体的な英単語（en）も付けてください。
 さらに、🍎や🐶のように、その単語をそのまま表す絵文字が標準で存在する場合はemojiフィールドに1文字だけ入れてください。
 なければ空文字（""）にしてください。無理にこじつけないでください。
@@ -46,7 +49,10 @@ export default async function handler(req, res) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 1.3 },
+        }),
       },
     )
   } catch (err) {

@@ -6,6 +6,16 @@ import LoadingScreen from './components/LoadingScreen'
 import { generateWords, generateKanjiPairs, fetchRealIllustration, translateWord } from './lib/api'
 import { fetchIllustrationImage } from './lib/illustration'
 
+// 同じテーマで再生成しても毎回同じ並びにならないよう、生成結果を画面に渡す前にシャッフルする。
+function shuffle(array) {
+  const result = [...array]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j], result[i]]
+  }
+  return result
+}
+
 const DEFAULT_SETTINGS = {
   mode: 'word-illustration',
   hintEnabled: false,
@@ -132,7 +142,7 @@ function App() {
         }
       }
 
-      setPairs(nextPairs)
+      setPairs(shuffle(nextPairs))
       setScreen('preview')
     } catch (err) {
       setError(err.message)
