@@ -28,14 +28,18 @@
 ## 使い方
 
 1. トップ画面でマッチングモード・対象年齢・ペア数・ヒント表示などを設定し、「次へ」に進む
-<img width="524" height="414" alt="image" src="https://github.com/user-attachments/assets/52a827ef-d3ed-44c3-85f3-a98791ae4ba5" />
+
+   <img width="524" height="414" alt="image" src="https://github.com/user-attachments/assets/52a827ef-d3ed-44c3-85f3-a98791ae4ba5" />
+
 2. テーマ（例：「乗り物」「文房具」など）を入力して生成を開始する
 3. しばらく待つと、ことば／漢字とイラストの生成が完了し、プレビュー画面が表示される
-<img width="682" height="416" alt="image" src="https://github.com/user-attachments/assets/801a74c6-4c04-479d-b57a-3cd049c1caee" />
+
+   <img width="682" height="416" alt="image" src="https://github.com/user-attachments/assets/801a74c6-4c04-479d-b57a-3cd049c1caee" />
 
 4. 気になるイラストがあれば「違う写真を選ぶ」で候補を選び直すか、「自分の画像を使う」で手持ちの画像に差し替える
 5. 内容に問題なければ「印刷する」から印刷する（台紙ページと、切り取って使うカードページの2ページが出力される）
-<img width="745" height="427" alt="image" src="https://github.com/user-attachments/assets/4770173b-ce4a-406d-af0b-62677e2f74c3" />
+
+   <img width="745" height="427" alt="image" src="https://github.com/user-attachments/assets/4770173b-ce4a-406d-af0b-62677e2f74c3" />
 
 
 ## 使用している技術
