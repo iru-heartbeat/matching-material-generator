@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { fetchIllustrationAlternatives, preloadImage } from '../lib/illustration'
 import { fetchRealIllustrationAlternatives } from '../lib/api'
 
@@ -7,8 +7,26 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
   const [options, setOptions] = useState([])
   const [stillLoading, setStillLoading] = useState(false)
   const [error, setError] = useState('')
+  const fileInputRef = useRef(null)
 
   if (!meta) return null
+
+  function handleUploadClick() {
+    fileInputRef.current?.click()
+  }
+
+  function handleFileChange(event) {
+    const file = event.target.files?.[0]
+    event.target.value = '' // 同じファイルを連続で選んでもchangeが発火するようにする
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = () => {
+      onSelect(reader.result)
+      setStatus('idle')
+    }
+    reader.readAsDataURL(file)
+  }
 
   async function handleOpen() {
     setOptions([])
@@ -55,15 +73,33 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
 
   return (
     <div className="print:hidden">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
       {status !== 'open' && (
-        <button
-          type="button"
-          onClick={handleOpen}
-          disabled={status === 'loading'}
-          className="mt-1 text-[11px] font-medium text-green-700 hover:text-green-800 disabled:opacity-50"
-        >
-          {status === 'loading' ? '探しています…' : '違う写真を選ぶ'}
-        </button>
+        <div className="mt-1 flex items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={handleOpen}
+            disabled={status === 'loading'}
+            className="text-[11px] font-medium text-green-700 hover:text-green-800 disabled:opacity-50"
+          >
+            {status === 'loading' ? '探しています…' : '違う写真を選ぶ'}
+          </button>
+          <span className="text-[11px] text-stone-300">|</span>
+          <button
+            type="button"
+            onClick={handleUploadClick}
+            className="text-[11px] font-medium text-stone-500 hover:text-stone-700"
+          >
+            自分の画像を使う
+          </button>
+        </div>
       )}
 
       {error && <p className="mt-1 text-[11px] text-red-600">{error}</p>}
@@ -84,13 +120,23 @@ export default function IllustrationChooser({ meta, currentUrl, onSelect }) {
           {!stillLoading && options.length === 0 && (
             <p className="text-[11px] text-stone-400">他の候補が見つかりませんでした</p>
           )}
-          <button
-            type="button"
-            onClick={() => setStatus('idle')}
-            className="w-full text-[11px] text-stone-400 hover:text-stone-600"
-          >
-            閉じる
-          </button>
+          <div className="flex w-full items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={handleUploadClick}
+              className="text-[11px] font-medium text-stone-500 hover:text-stone-700"
+            >
+              自分の画像を使う
+            </button>
+            <span className="text-[11px] text-stone-300">|</span>
+            <button
+              type="button"
+              onClick={() => setStatus('idle')}
+              className="text-[11px] text-stone-400 hover:text-stone-600"
+            >
+              閉じる
+            </button>
+          </div>
         </div>
       )}
     </div>
